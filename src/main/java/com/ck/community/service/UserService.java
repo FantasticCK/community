@@ -10,6 +10,7 @@ import com.ck.community.util.MailClient;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -165,5 +166,17 @@ public class UserService implements CommunityConstant {
 
     public int updateHeader(int userId, String headerUrl) {
         return userMapper.updateHeader(userId, headerUrl);
+    }
+
+    public Map<String, Object> changePassword(int userId, String oldPassword, String newPassword) {
+        Map<String, Object> map = new HashMap<>();
+        User user = userMapper.selectById(userId);
+        oldPassword = CommunityUtil.md5(oldPassword + user.getSalt());
+        if (!user.getPassword().equals(oldPassword)) {
+            map.put("passwordError", "原密码不正确!");
+            return map;
+        }
+        userMapper.updatePassword(userId, CommunityUtil.md5(newPassword + user.getSalt()));
+        return map;
     }
 }
